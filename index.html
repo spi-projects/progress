@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team-crypt | Daily Progress</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PDF Libs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+</head>
+
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <i class="fa-solid fa-satellite-dish"></i>
+                <h1>Crypt_progress_tracker</h1>
+            </div>
+
+            <div class="date-navigator">
+                <button id="prev-day" class="nav-btn"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="date-display">
+                    <span id="current-date-display">Today</span>
+                    <span id="lock-indicator" class="lock-badge hidden"><i class="fa-solid fa-lock"></i> Locked</span>
+                </div>
+                <button id="next-day" class="nav-btn" disabled><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+
+            <div class="header-actions">
+                <button id="btn-stats" class="action-btn" title="View Month Stats"><i
+                        class="fa-solid fa-chart-pie"></i></button>
+            </div>
+        </header>
+
+        <main>
+            <section class="stats-overview" id="stats-overview">
+                <!-- Injected via JS -->
+                <div class="stat-card">
+                    <h3>Day Completion</h3>
+                    <div class="progress-ring-container">
+                        <svg class="progress-ring" width="80" height="80">
+                            <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.1)" stroke-width="6"
+                                fill="transparent" r="32" cx="40" cy="40" />
+                            <circle id="daily-progress-circle" class="progress-ring__circle"
+                                stroke="var(--accent-color)" stroke-width="6" fill="transparent" r="32" cx="40"
+                                cy="40" />
+                        </svg>
+                        <span id="daily-text">0%</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="goals-grid" id="goals-grid">
+                <!-- Goals injected here -->
+            </section>
+        </main>
+
+        <button id="btn-add-goal" class="fab"><i class="fa-solid fa-plus"></i></button>
+    </div>
+
+    <!-- Modal for Adding Goals -->
+    <div id="goal-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>New Goal</h2>
+                <button id="close-modal" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="goal-form">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="goal-title" placeholder="e.g. Read 30 mins" required>
+                </div>
+                <div class="form-group">
+                    <label>Icon (FontAwesome Class)</label>
+                    <input type="text" id="goal-icon" placeholder="fa-book" value="fa-bullseye">
+                    <small>Check <a href="https://fontawesome.com/search?o=r&m=free"
+                            target="_blank">FontAwesome</a></small>
+                </div>
+                <div class="form-group">
+                    <label>Target Type</label>
+                    <div class="type-selector">
+                        <div class="radio-group">
+                            <input type="radio" name="targetType" value="boolean" id="type-bool" checked>
+                            <label for="type-bool" class="radio-label"><i class="fa-regular fa-square-check"></i>
+                                Checkbox</label>
+                        </div>
+                        <div class="radio-group">
+                            <input type="radio" name="targetType" value="number" id="type-num">
+                            <label for="type-num" class="radio-label"><i class="fa-solid fa-arrow-up-9-1"></i>
+                                Numeric</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group hidden" id="target-value-group">
+                    <label>Target Value</label>
+                    <input type="number" id="goal-target" value="1" min="1">
+                    <span class="unit-label">units</span>
+                </div>
+                <button type="submit" class="submit-btn">Initialize Orbit</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Monthly Report -->
+    <div id="report-modal" class="modal hidden">
+        <div class="modal-content report-content">
+            <div class="modal-header">
+                <div class="report-nav">
+                    <button id="prev-report-month" class="nav-btn-small"><i
+                            class="fa-solid fa-chevron-left"></i></button>
+                    <h2 id="report-month-title" style="margin:0;">Monthly Report</h2>
+                    <button id="next-report-month" class="nav-btn-small"><i
+                            class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <div class="report-actions">
+                    <button id="btn-export-pdf" class="action-btn pdf-btn " title="Download PDF">
+                        <i class="fa-solid fa-file-pdf"></i> Export
+                    </button>
+                    <button id="close-report" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            <div id="report-body" class="report-body">
+                <!-- Report Items Injected Here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Storage Toggle Button -->
+    <button id="btn-storage-toggle" class="storage-fab" title="Inspect Storage">
+        <i class="fa-solid fa-database"></i>
+    </button>
+
+    <!-- Storage Inspector Panel -->
+    <div id="storage-panel" class="storage-panel collapsed">
+        <div class="storage-header">
+            <div class="storage-title"><i class="fa-solid fa-server"></i> System Internals</div>
+            <button id="btn-close-storage" class="storage-close-btn"><i class="fa-solid fa-chevron-down"></i></button>
+        </div>
+        <div class="storage-content">
+            <div class="storage-metrics">
+                <div class="metric-label">Project Location</div>
+                <div class="metric-value location-text" id="project-location">Detecting...</div>
+
+                <div class="metric-label">Local Storage Usage</div>
+                <div class="storage-bar-container">
+                    <div id="storage-bar-fill" class="storage-bar-fill" style="width: 0%"></div>
+                </div>
+                <div class="metric-value" id="storage-usage-text">0 KB / 5 MB (Estimated)</div>
+            </div>
+            <div class="data-preview">
+                <h4>Stored Data JSON</h4>
+                <pre id="json-viewer" class="json-block"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
